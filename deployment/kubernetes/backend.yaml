@@ -1,0 +1,203 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: rfm
+  POSTGRES_USER: postgres
+  JWT_ALGORITHM: "HS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  JWT_REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  LOG_LEVEL: "info"
+  ENABLE_SSL: "true"
+  ALLOWED_ORIGINS: "https://rfm-frontend.default.svc.cluster.local,https://rfm.example.com"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secret
+type: Opaque
+data:
+  # Base64 encoded 'postgres'
+  POSTGRES_PASSWORD: cG9zdGdyZXM=
+  # Replace with actual JWT secret key (base64 encoded)
+  JWT_SECRET_KEY: X19KV1RfU0VDUkVUX0tFWV9f
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-logs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-certs-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rfm-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rfm-backend
+  template:
+    metadata:
+      labels:
+        app: rfm-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/yourusername/rfm-architecture-backend:__IMAGE_TAG__
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+            - containerPort: 8765
+              name: websocket
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: POSTGRES_HOST
+            - name: POSTGRES_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: POSTGRES_PORT
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: POSTGRES_PASSWORD
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: JWT_SECRET_KEY
+            - name: JWT_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: JWT_ALGORITHM
+            - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+            - name: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: JWT_REFRESH_TOKEN_EXPIRE_DAYS
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: LOG_LEVEL
+            - name: ENABLE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: ENABLE_SSL
+            - name: ALLOWED_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: ALLOWED_ORIGINS
+            - name: SSL_CERT_PATH
+              value: "/app/certs/server.crt"
+            - name: SSL_KEY_PATH
+              value: "/app/certs/server.key"
+          volumeMounts:
+            - name: backend-data
+              mountPath: /app/data
+            - name: backend-logs
+              mountPath: /app/logs
+            - name: backend-certs
+              mountPath: /app/certs
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+      volumes:
+        - name: backend-data
+          persistentVolumeClaim:
+            claimName: backend-data-pvc
+        - name: backend-logs
+          persistentVolumeClaim:
+            claimName: backend-logs-pvc
+        - name: backend-certs
+          persistentVolumeClaim:
+            claimName: backend-certs-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rfm-backend
+spec:
+  selector:
+    app: rfm-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+    - name: websocket
+      port: 8765
+      targetPort: 8765
+  type: ClusterIP

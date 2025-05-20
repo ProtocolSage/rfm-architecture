@@ -1,0 +1,16 @@
+{
+  "authentication": {
+    "enabled": true,
+    "jwt_secret_key_path": "jwt_secret.key",
+    "token_expiry_seconds": 3600,
+    "jwt_algorithm": "HS256"
+  },
+  "server": {
+    "log_level": "info",
+    "host": "0.0.0.0",
+    "port": 8765
+  },
+  "api_keys": {
+    "client_1": "7fb310ca658d249e"
+  }
+}

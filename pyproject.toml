@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "rfm_architecture"
+version = "0.2.0"
+description = "Advanced Recursive Fractal Mind architecture visualizer"
+authors = ["Maintainer <maintainer@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    {include = "rfm"},
+    {include = "rfm_ui", from = "ui"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+matplotlib = "^3.7"
+networkx = "^3.1"
+numpy = "^1.26.0"
+PyYAML = "^6.0"
+scipy = "^1.11.0"
+
+[tool.poetry.scripts]
+rfm-viz = "rfm.main:main"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.2"
+flake8 = "^7.0"
+black = "^24.4"
+typing-extensions = "^4.10"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

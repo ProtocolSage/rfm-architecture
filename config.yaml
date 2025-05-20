@@ -1,0 +1,342 @@
+# Recursive Fractal Mind Architecture Visualization Configuration
+
+# Layout settings
+layout:
+  grid:
+    width: 100
+    height: 100
+    origin: [50, 50]
+    golden_ratio: 1.618
+
+# Component definitions
+components:
+  cif:
+    position: [50, 50]
+    size: [28, 28]
+    color: "#42d7f5"
+    label: "Consciousness\nIntegration Field"
+    description: "Global workspace for information broadcast"
+    zorder: 10
+  
+  perception:
+    position: [25, 80]
+    size: [22, 16]
+    color: "#4287f5"
+    label: "Perception System"
+    description: "Sensory processing & pattern recognition"
+    zorder: 6
+  
+  knowledge:
+    position: [80, 70]
+    size: [22, 16]
+    color: "#f54242"
+    label: "Knowledge Integration\nNetwork"
+    description: "Dynamic semantic representation"
+    zorder: 6
+  
+  metacognitive:
+    position: [80, 30]
+    size: [22, 16]
+    color: "#42f584"
+    label: "Metacognitive\nExecutive"
+    description: "Reflective self-monitoring"
+    zorder: 6
+  
+  evolutionary:
+    position: [25, 20]
+    size: [22, 16]
+    color: "#9942f5"
+    label: "Evolutionary\nOptimizer"
+    description: "Structure adaptation"
+    zorder: 6
+  
+  simulation:
+    position: [50, 20]
+    size: [22, 14]
+    color: "#f5a742"
+    label: "Simulation Engine"
+    description: "Predictive world modeling"
+    zorder: 6
+
+# Connection definitions
+connections:
+  - source: perception
+    target: cif
+    curve: 0.1
+    width: 2
+    color: "#2c3e50"
+    bidirectional: true
+  
+  - source: cif
+    target: knowledge
+    curve: 0.1
+    width: 2
+    color: "#2c3e50"
+    bidirectional: true
+  
+  - source: cif
+    target: metacognitive
+    curve: 0.1
+    width: 2
+    color: "#2c3e50"
+    bidirectional: true
+  
+  - source: metacognitive
+    target: evolutionary
+    curve: 0.1
+    width: 2
+    color: "#2c3e50"
+    bidirectional: true
+  
+  - source: evolutionary
+    target: simulation
+    curve: 0.1
+    width: 2
+    color: "#2c3e50"
+    bidirectional: true
+  
+  - source: simulation
+    target: cif
+    curve: 0.3
+    width: 1.5
+    color: "#2c3e50"
+    bidirectional: true
+
+# Conscious fields settings
+conscious_fields:
+  primary:
+    size: [28, 28]
+    alpha: 0.8
+    color: "#42d7f5"
+  
+  reflective:
+    size: [34, 34]
+    alpha: 0.6
+    color: "#42f5b3"
+  
+  peripheral:
+    size: [40, 40]
+    alpha: 0.4
+    color: "#42f5f5"
+  
+  prospective:
+    size: [46, 46]
+    alpha: 0.3
+    color: "#42b3f5"
+
+# Fractal settings
+fractals:
+  type: "l_system"  # Options: l_system, mandelbrot, julia, cantor
+  depth: 4  # Recursion depth
+  parameters:
+    # L-system specific
+    axiom: "F"
+    rules:
+      F: "F+F-F-F+F"
+    angle: 90
+    color: "#b086ff"
+    alpha: 0.1
+    width: 0.5
+    # Mandelbrot specific
+    center: [-0.5, 0]
+    zoom: 1.5
+    max_iter: 100
+    cmap: "viridis"
+    # Julia specific
+    c_real: -0.7
+    c_imag: 0.27
+    # Cantor specific
+    gap_ratio: 0.3
+
+# Alternative fractals for easy switching
+alternative_fractals:
+  julia_douady_rabbit:
+    type: "julia"
+    parameters:
+      c_real: -0.123
+      c_imag: 0.745
+      center: [0, 0]
+      zoom: 1.2
+      max_iter: 100
+      cmap: "inferno"
+      alpha: 0.25
+
+  julia_dendrite:
+    type: "julia"
+    parameters:
+      c_real: 0.0
+      c_imag: 1.0
+      center: [0, 0]
+      zoom: 1.5
+      max_iter: 100
+      cmap: "magma"
+      alpha: 0.25
+
+  julia_siegel_disk:
+    type: "julia"
+    parameters:
+      c_real: -0.391
+      c_imag: -0.587
+      center: [0, 0]
+      zoom: 1.2
+      max_iter: 100
+      cmap: "cividis"
+      alpha: 0.25
+
+  julia_seahorse_valley:
+    type: "julia"
+    parameters:
+      c_real: -0.75
+      c_imag: 0.11
+      center: [0, 0]
+      zoom: 1.4
+      max_iter: 150
+      cmap: "plasma"
+      alpha: 0.3
+
+  julia_san_marco:
+    type: "julia"
+    parameters:
+      c_real: -0.75
+      c_imag: 0.0
+      center: [0, 0]
+      zoom: 1.6
+      max_iter: 120
+      cmap: "viridis"
+      alpha: 0.25
+
+  julia_galaxies:
+    type: "julia"
+    parameters:
+      c_real: 0.285
+      c_imag: 0.01
+      center: [0, 0]
+      zoom: 1.2
+      max_iter: 200
+      cmap: "twilight"
+      alpha: 0.35
+
+  julia_dragon:
+    type: "julia"
+    parameters:
+      c_real: -0.835
+      c_imag: -0.2321
+      center: [0, 0]
+      zoom: 1.3
+      max_iter: 180
+      cmap: "hot"
+      alpha: 0.3
+
+  julia_feathers:
+    type: "julia"
+    parameters:
+      c_real: 0.322
+      c_imag: 0.5
+      center: [0, 0]
+      zoom: 1.4
+      max_iter: 150
+      cmap: "cool"
+      alpha: 0.25
+
+  julia_spiral:
+    type: "julia"
+    parameters:
+      c_real: -0.4
+      c_imag: 0.6
+      center: [0, 0]
+      zoom: 1.5
+      max_iter: 160
+      cmap: "cubehelix"
+      alpha: 0.3
+
+  julia_nebula:
+    type: "julia"
+    parameters:
+      c_real: 0.355
+      c_imag: 0.355
+      center: [0, 0]
+      zoom: 1.2
+      max_iter: 200
+      cmap: "rainbow"
+      alpha: 0.2
+
+# Morphogen settings
+morphogen:
+  type: "voronoi"  # Options: voronoi, gradient
+  points: 15
+  color_start: "#00c2c7"
+  color_end: "#b086ff"
+  opacity: 0.2
+  blend_mode: "overlay"
+
+# KIN graph settings
+kin_graph:
+  nodes: 15
+  edge_probability: 0.3
+  node_size: 3
+  node_color: "#f54242"
+  edge_color: "#f5a742"
+  layout: "spring"  # Options: spring, circular, random
+
+# Phi metric settings
+phi_metric:
+  display: true
+  position: [60, 55]
+  formula: true
+  font_size: 10
+  color: "#b086ff"
+  value: 0.85
+
+# Processing scales settings
+processing_scales:
+  micro:
+    radius: 15
+    dash_pattern: [1, 1]
+    color: "#42f584"
+  
+  cognitive:
+    radius: 25
+    dash_pattern: [2, 1]
+    color: "#42f5b3"
+  
+  learning:
+    radius: 35
+    dash_pattern: [3, 2]
+    color: "#42d7f5"
+  
+  developmental:
+    radius: 45
+    dash_pattern: [5, 3]
+    color: "#4287f5"
+
+# Animation settings
+animation:
+  broadcast:
+    enabled: true
+    duration: 400  # ms
+    fps: 60
+    pulse_count: 3
+    easing: "cubic-bezier(0.25, 0.1, 0.25, 1.0)"
+    color: "#00c2c7"
+    glow: true
+
+# Styling settings
+styling:
+  background: "#0a0d16"
+  border: "#fdfdff"
+  fonts:
+    ui: "Inter"
+    code: "JetBrains Mono"
+    sizes:
+      title: 18
+      subtitle: 12
+      component: 11
+      description: 8
+  effects:
+    shadow:
+      blur: 8
+      opacity: 0.25
+    glow:
+      color: "#00c2c7"
+      blur: 10
+      opacity: 0.4
