@@ -1,203 +1,104 @@
-# RFM Architecture
+# RFM Architecture Visualizer
 
-Advanced Recursive Fractal Mind architecture visualizer that creates stunning fractal visualizations with robust WebSocket progress reporting.
+A production-ready visualizer for the **Recursive Fractal Mind** cognitive architecture with a glass-morphic UI, neon effects and responsive design.
 
-## Overview
-
-The RFM Architecture (Recursive Fractal Mind) is a powerful framework for visualizing and exploring fractal patterns and structures. It combines advanced mathematical algorithms with a premium user interface to provide an immersive experience for fractal exploration.
+![RFM Architecture](rfm_spectacular_diagram.png)
 
 ## Features
 
-- High-quality fractal rendering with multiple algorithms
-- Premium glass-morphic UI with responsive controls
-- Real-time performance monitoring and telemetry
-- Advanced error handling with comprehensive diagnostics
-- Customizable visualization parameters
-- Animation capabilities for dynamic fractal exploration
+- **Glass-morphic UI**: Modern translucent interface with depth and blur effects
+- **Interactive Fractal Explorer**: Real-time WebGL-powered fractal visualization
+- **Node-based Architecture Editor**: Visual editing of cognitive architecture components
+- **Audio Feedback**: Immersive sound design for interactions
+- **Resilient WebSocket Communication**: Robust progress reporting and real-time updates
+- **Adaptive Layout**: Responsive design for different screen sizes
+- **High Performance**: GPU-accelerated rendering with optimized computations
+- **Component Showcase**: Gallery of UI components with interactive examples
 
-### WebSocket Resilience Framework
+## Getting Started
 
-- **Resilient WebSocket Communication**
-  - Automatic reconnection with exponential backoff
-  - Operation state preservation across disconnections
-  - Comprehensive error handling and recovery
+### Prerequisites
 
-- **Security**
-  - TLS/SSL encryption
-  - JWT authentication
-  - Rate limiting
+- Node.js 16+
+- Python 3.8+
+- GPU with WebGL support (recommended)
 
-- **Monitoring and Observability**
-  - Resource usage monitoring (CPU, memory, sockets)
-  - Structured logging
-  - Performance metrics collection
+### Installation
 
-- **Testing Framework**
-  - Unit tests for WebSocket components
-  - End-to-end tests for UI interactions
-  - Resilience tests (connection, operation, load)
-  - Chaos testing for fault injection
+1. Clone the repository:
+   ```
+   git clone https://github.com/ProtocolSage/rfm-architecture.git
+   cd rfm-architecture
+   ```
 
-## Installation
+2. Install dependencies:
+   ```
+   # Install frontend dependencies
+   npm install
 
-### Using Poetry (recommended)
+   # Install Python dependencies
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
 
-```bash
-# Clone the repository
-git clone https://github.com/username/RFM-Architecture.git
-cd RFM-Architecture
+3. Run the development server:
+   ```
+   # Start the UI development server
+   npm run dev
 
-# Install with Poetry
-poetry install
+   # In another terminal, start the Python backend
+   python run_websocket_server.py
+   ```
 
-# Run the application
-poetry run rfm-viz
-```
+4. Open your browser and navigate to `http://localhost:5173`
 
-### Using pip
+## Key Components
 
-```bash
-# Clone the repository
-git clone https://github.com/username/RFM-Architecture.git
-cd RFM-Architecture
+- **Dashboard**: Overview of system status and recent fractals
+- **Fractal Explorer**: Interactive WebGL-based fractal visualization
+- **Architecture Editor**: Node-based visual editor for cognitive architecture
+- **Settings**: Comprehensive system configuration
 
-# Install dependencies
-pip install -r requirements.txt
+## Technology Stack
 
-# Run the application
-python run_viz.py
-```
+### Frontend
+- React 18
+- Three.js + React Three Fiber
+- Framer Motion
+- TailwindCSS
+- WebGL Shaders
+- Howler.js + Tone.js (Sound System)
 
-## Premium UI
-
-To experience the premium UI with enhanced visuals:
-
-```bash
-python run_premium_ui.py
-```
-
-## WebSocket Server
-
-### Standard WebSocket Server
-
-```bash
-python run_websocket_server.py
-```
-
-### Secure WebSocket Server (with TLS/SSL)
-
-```bash
-python run_secure_websocket_server.py
-```
-
-### Production-Ready Server
-
-```bash
-python run_production_websocket_server.py --enable-auth --monitor-resources
-```
-
-## Running Tests
-
-### Standard Tests
-
-```bash
-# Run all tests
-pytest
-
-# Run visual regression tests
-npx playwright test
-```
-
-### WebSocket Resilience Tests
-
-```bash
-# Run unit tests for WebSocket components
-pytest tests/test_websocket_client_server.py -v
-pytest tests/test_progress_reporting.py -v
-
-# Run E2E UI interaction tests
-npx playwright test tests/e2e/websocket-resilience.spec.ts
-
-# Run comprehensive resilience tests
-python tests/run_resilience_test.py --tests all
-
-# Run chaos tests for fault injection
-python tests/chaos_test.py --all
-```
-
-## Deployment
-
-### Docker Compose
-
-```bash
-# Generate SSL certificates
-./tools/ssl/generate_certs.sh
-
-# Run with Docker Compose
-docker-compose -f deployment/docker-compose.yml up -d
-```
-
-### Kubernetes
-
-```bash
-kubectl apply -f deployment/kubernetes/
-```
+### Backend
+- Python
+- FastAPI
+- WebSockets
+- NumPy/CuPy
+- OpenCL/CUDA (optional)
 
 ## Development
 
-### Setup Development Environment
+### Running Tests
+```
+# Frontend Tests
+npm test
 
-```bash
-# Install development dependencies
-pip install -r requirements_dev.txt
-
-# Run tests
-pytest
-
-# Run visual regression tests
-npx playwright test
+# Backend Tests
+python -m pytest tests/
 ```
 
-### Project Structure
+### Building for Production
+```
+npm run build
+```
 
-- `rfm/` - Core fractal generation algorithms and utilities
-  - `core/` - Core functionality including WebSocket implementation
-    - `auth.py` - JWT authentication
-    - `logging_config.py` - Structured logging
-    - `monitoring.py` - Resource monitoring
-    - `rate_limiting.py` - Rate limiting
-    - `websocket_server.py` - Basic WebSocket server
-    - `websocket_server_secure.py` - TLS/SSL enabled WebSocket server
-- `ui/rfm_ui/` - Premium UI components and visualization tools
-  - `websocket_client_enhanced.py` - Resilient WebSocket client
-- `tests/` - Test suite including resilience and chaos tests
-- `docs/` - Documentation and usage examples
-- `deployment/` - Deployment configurations
-  - `kubernetes/` - Kubernetes manifests
-  - `docker-compose.yml` - Docker Compose configuration
-- `tools/` - Utility tools
-  - `ci/` - CI/CD tools
-  - `monitor_resources.py` - Resource monitoring script
-  - `ssl/` - SSL certificate management
-- Server launchers:
-  - `run_websocket_server.py`
-  - `run_secure_websocket_server.py`
-  - `run_production_websocket_server.py`
-
-## Configuration
-
-The application can be configured using the `config.yaml` file. You can customize:
-
-- Fractal types and parameters
-- UI appearance and behavior
-- Performance settings
-- Output formats and quality
-- WebSocket server settings
+This will generate production-ready files in the `dist` directory.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+[MIT License](LICENSE)
 
-## Screenshots
+## Special Thanks
 
-![RFM Architecture Visualization](rfm_spectacular_diagram.png)
+Developed by Protocol Sage for the Recursive Fractal Mind project.
