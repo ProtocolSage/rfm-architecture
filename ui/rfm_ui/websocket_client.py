@@ -12,8 +12,8 @@ import threading
 import time
 import traceback
 import websockets
-from typing import Dict, Any, List, Optional, Callable, Set, Union
-from dataclasses import dataclass
+from typing import Dict, Any, List, Optional, Callable
+from dataclasses import dataclass, field
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,8 @@ class OperationInfo:
     total_steps: Optional[int] = None
     start_time: Optional[float] = None
     last_update_time: Optional[float] = None
-    details: Dict[str, Any] = None
+    # Use a default empty dictionary to avoid None checks when updating details
+    details: Dict[str, Any] = field(default_factory=dict)
 
 
 class WebSocketClient:
@@ -324,8 +325,6 @@ class WebSocketClient:
                     op.last_update_time = update_data.get("timestamp", time.time())
                     
                     if "details" in update_data:
-                        if op.details is None:
-                            op.details = {}
                         op.details.update(update_data["details"])
                 
                 # Notify callbacks
@@ -396,8 +395,6 @@ class WebSocketClient:
                 op.last_update_time = time.time()
                 
                 if "details" in data:
-                    if op.details is None:
-                        op.details = {}
                     op.details.update(data["details"])
                 
                 # Notify callbacks
@@ -414,8 +411,6 @@ class WebSocketClient:
                 op.last_update_time = time.time()
                 
                 if "details" in data:
-                    if op.details is None:
-                        op.details = {}
                     op.details.update(data["details"])
                 
                 # Notify callbacks
@@ -432,8 +427,6 @@ class WebSocketClient:
                 op.last_update_time = time.time()
                 
                 if "details" in data:
-                    if op.details is None:
-                        op.details = {}
                     op.details.update(data["details"])
                 
                 # Notify callbacks
