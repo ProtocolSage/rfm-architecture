@@ -16,6 +16,7 @@ import uuid
 import threading
 import traceback
 import websockets
+from websockets.legacy.server import serve
 from typing import Dict, Any, Optional, List, Set, Union, Callable, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
@@ -207,7 +208,7 @@ class ProgressServer:
         
         try:
             # Create WebSocket server
-            self.server = await websockets.serve(
+            self.server = await serve(
                 self._handle_client,
                 self.host,
                 self.port,
