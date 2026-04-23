@@ -175,6 +175,14 @@ class ProgressWebSocketServer:
                 return
                 
             success = await self.progress_manager.cancel_operation(operation_id)
+            if success:
+                await websocket.send(json.dumps({
+                    "type": "operation_canceled",
+                    "operation_id": operation_id,
+                    "timestamp": time.time(),
+                    "details": {"source": "cancel_operation"}
+                }))
+
             await websocket.send(json.dumps({
                 "type": "cancel_result",
                 "operation_id": operation_id,
