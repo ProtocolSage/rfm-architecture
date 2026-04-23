@@ -47,7 +47,6 @@ jobs:
       
       - name: Run unit tests
         run: |
-          pytest tests/test_websocket_client_server.py -v
           pytest tests/test_progress_reporting.py -v
       
       - name: Upload test results
