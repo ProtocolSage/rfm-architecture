@@ -10,6 +10,8 @@ import os
 import sys
 import time
 import json
+import functools
+import inspect
 import logging
 import logging.config
 import logging.handlers
@@ -450,6 +452,35 @@ def log_timing(operation: str,
         Function decorator
     """
     def decorator(func):
+        @functools.wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            # Get logger from module name
+            logger = get_logger(func.__module__)
+
+            # Get correlation ID and operation ID from kwargs if present
+            correlation_id = kwargs.pop("correlation_id", None)
+            operation_id = kwargs.pop("operation_id", None)
+
+            # Create context
+            context = {
+                "function": func.__name__,
+                "module": func.__module__
+            }
+
+            # Add timing context
+            with TimingContext(
+                logger,
+                operation,
+                level,
+                category,
+                correlation_id,
+                operation_id,
+                component,
+                context
+            ):
+                return await func(*args, **kwargs)
+
+        @functools.wraps(func)
         def wrapper(*args, **kwargs):
             # Get logger from module name
             logger = get_logger(func.__module__)
@@ -476,6 +507,9 @@ def log_timing(operation: str,
                 context
             ):
                 return func(*args, **kwargs)
+
+        if inspect.iscoroutinefunction(func):
+            return async_wrapper
 
         return wrapper
 

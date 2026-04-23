@@ -430,7 +430,7 @@ class ProgressServer:
         return None
     
     @log_timing("handle_client", LogLevel.DEBUG, LogCategory.CONNECTION, "websocket_server")
-    async def _handle_client(self, websocket, path: str) -> None:
+    async def _handle_client(self, websocket, path: str = "/") -> None:
         """
         Handle a client WebSocket connection.
         
