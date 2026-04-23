@@ -139,8 +139,7 @@ async def run_tests(args) -> int:
     # Start server if requested
     server_process = None
     if args.start_server:
-        logger.info(f"Starting WebSocket server on {args.host}:{args.port}")
-        server_process = await start_server(args.host, args.port, args.enable_auth)
+        logger.info("Resilience test classes manage their own WebSocket server lifecycle")
     
     try:
         # Create report directory
@@ -177,7 +176,7 @@ async def run_tests(args) -> int:
                 restart_count=args.restart_count,
                 restart_interval=args.restart_interval
             )
-            results.append(await connection_test.run())
+            results.append(await asyncio.to_thread(connection_test.run))
         
         if "operation" in args.tests:
             logger.info("Running operation resilience test")
@@ -187,7 +186,7 @@ async def run_tests(args) -> int:
                 description="Tests operation state preservation during connection disruptions",
                 operation_count=args.operation_count
             )
-            results.append(await operation_test.run())
+            results.append(await asyncio.to_thread(operation_test.run))
         
         if "load" in args.tests:
             logger.info("Running load resilience test")
@@ -198,15 +197,15 @@ async def run_tests(args) -> int:
                 client_count=args.client_count,
                 operations_per_client=args.operations_per_client
             )
-            results.append(await load_test.run())
+            results.append(await asyncio.to_thread(load_test.run))
         
         # Generate summary report
         summary = {
             "timestamp": time.time(),
             "config": vars(args),
             "tests": len(results),
-            "passed": sum(1 for r in results if r.get("status") == "passed"),
-            "failed": sum(1 for r in results if r.get("status") == "failed"),
+            "passed": sum(1 for r in results if r.get("success")),
+            "failed": sum(1 for r in results if not r.get("success")),
             "results": results
         }
         
