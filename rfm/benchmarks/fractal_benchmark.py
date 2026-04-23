@@ -914,7 +914,7 @@ class FractalBenchmark:
             html.append(f"    new Chart(ctx{chart_id}, {{")
             html.append("      type: 'bar',")
             html.append("      data: {")
-            html.append(f"        labels: {str(labels).replace('\'', '\\\'')},")
+            html.append(f"        labels: {json.dumps(labels)},")
             html.append("        datasets: [{")
             html.append("          label: 'Render Time (ms)',")
             html.append("          backgroundColor: 'rgba(54, 162, 235, 0.5)',")

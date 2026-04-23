@@ -840,14 +840,14 @@ class ArchitectureComparison:
                 # Add labels
                 ax.set_xticks(range(len(labels)))
                 ax.set_xticklabels(labels, rotation=45, ha="right", color="white")
-                ax.tick_params(axis='y', colors='white")
+                ax.tick_params(axis='y', colors="white")
                 
                 # Add values on top of bars
                 for bar in bars:
                     height = bar.get_height()
                     ax.text(bar.get_x() + bar.get_width()/2., height,
-                            f'{height:.3f}",
-                            ha='center', va='bottom', color="white", fontsize=10)
+                            f"{height:.3f}",
+                            ha="center", va="bottom", color="white", fontsize=10)
                             
                 # Set title and ylabel
                 ax.set_title(f"Comparison by {self.selected_metric}", color="white")

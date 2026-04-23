@@ -51,7 +51,7 @@ jobs:
           pytest tests/test_progress_reporting.py -v
       
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-unit
@@ -99,7 +99,7 @@ jobs:
           python tests/run_resilience_test.py --tests operation --start-server --duration 20 --operation-count 2
       
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-resilience
