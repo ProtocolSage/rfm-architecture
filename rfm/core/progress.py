@@ -435,8 +435,14 @@ class ProgressManager:
                 # Wait before cleanup to allow final status to be queried
                 await asyncio.sleep(300)  # 5 minutes
                 await self.remove_operation(operation_id)
-                
-            asyncio.create_task(_cleanup_later())
+
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                logger.debug("No running event loop; skipping delayed operation cleanup")
+                return
+
+            loop.create_task(_cleanup_later())
 
 
 # Global progress manager instance

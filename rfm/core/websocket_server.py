@@ -44,6 +44,7 @@ class ProgressWebSocketServer:
         self.server = None
         self.running = False
         self.progress_manager = get_progress_manager()
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
     
     async def start(self) -> None:
         """Start the WebSocket server."""
@@ -53,6 +54,7 @@ class ProgressWebSocketServer:
             
         # Add progress callback
         self.progress_manager.add_callback(self._on_progress_update)
+        self.loop = asyncio.get_running_loop()
         
         # Start server
         try:
@@ -92,6 +94,7 @@ class ProgressWebSocketServer:
             await self.server.wait_closed()
             
         self.running = False
+        self.loop = None
         self.clients.clear()
         logger.info("WebSocket server stopped")
     
@@ -237,14 +240,48 @@ class ProgressWebSocketServer:
         
         # Convert to JSON once for all clients
         message_json = json.dumps(message)
+        terminal_message_json = self._terminal_message_json(progress_data)
         
         # Broadcast to all clients
         for client in list(self.clients):
-            try:
-                # Use ensure_future to avoid blocking
-                asyncio.ensure_future(client.send(message_json))
-            except Exception as e:
-                logger.error(f"Error sending to client: {e}")
+            self._schedule_client_send(client, message_json)
+            if terminal_message_json is not None:
+                self._schedule_client_send(client, terminal_message_json)
+
+    def _terminal_message_json(self, progress_data: ProgressData) -> Optional[str]:
+        """Build a terminal operation event for client callbacks."""
+        message_type_by_status = {
+            OperationStatus.COMPLETED: "operation_completed",
+            OperationStatus.FAILED: "operation_failed",
+            OperationStatus.CANCELED: "operation_canceled",
+        }
+        message_type = message_type_by_status.get(progress_data.status)
+        if message_type is None:
+            return None
+
+        return json.dumps({
+            "type": message_type,
+            "operation_id": progress_data.operation_id,
+            "timestamp": time.time(),
+            "details": progress_data.details,
+        })
+
+    def _schedule_client_send(self, client: WebSocketServerProtocol, message_json: str) -> None:
+        """Schedule a WebSocket send on the server event loop from any caller thread."""
+        if self.loop is None or not self.loop.is_running():
+            logger.warning("Cannot send progress update: WebSocket server loop is not running")
+            return
+
+        try:
+            running_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run_coroutine_threadsafe(client.send(message_json), self.loop)
+            return
+
+        if running_loop is self.loop:
+            running_loop.create_task(client.send(message_json))
+        else:
+            asyncio.run_coroutine_threadsafe(client.send(message_json), self.loop)
     
     def is_running(self) -> bool:
         """
