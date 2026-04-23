@@ -438,7 +438,23 @@ class WebSocketClient:
                 
                 # Notify callbacks
                 await self._notify_callbacks("operation_canceled", data)
-                
+
+        elif message_type == "cancel_result":
+            # Treat a successful cancellation acknowledgement as a cancellation event.
+            operation_id = data.get("operation_id")
+            if operation_id and data.get("success"):
+                if operation_id in self.operations:
+                    op = self.operations[operation_id]
+                    op.status = OperationStatus.CANCELED
+                    op.last_update_time = time.time()
+
+                await self._notify_callbacks("operation_canceled", {
+                    "type": "operation_canceled",
+                    "operation_id": operation_id,
+                    "timestamp": data.get("timestamp", time.time()),
+                    "details": data.get("details", {}),
+                })
+
         elif message_type == "pong":
             # Handle pong (ping response)
             logger.debug("Received pong from server")
