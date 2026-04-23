@@ -8,6 +8,19 @@ layout:
     origin: [50, 50]
     golden_ratio: 1.618
 
+# Rendering settings
+rendering:
+  use_gpu: false
+  cpu_optimization: true
+  max_threads: 8  # Set to match your logical processors (your system has 8)
+
+# Performance settings
+performance:
+  detail_level: "medium"  # Options: low, medium, high
+  enable_effects: true
+  enable_animations: true
+  reduce_quality_during_interaction: true
+
 # Component definitions
 components:
   cif:
@@ -17,7 +30,7 @@ components:
     label: "Consciousness\nIntegration Field"
     description: "Global workspace for information broadcast"
     zorder: 10
-  
+
   perception:
     position: [25, 80]
     size: [22, 16]
@@ -25,7 +38,7 @@ components:
     label: "Perception System"
     description: "Sensory processing & pattern recognition"
     zorder: 6
-  
+
   knowledge:
     position: [80, 70]
     size: [22, 16]
@@ -33,7 +46,7 @@ components:
     label: "Knowledge Integration\nNetwork"
     description: "Dynamic semantic representation"
     zorder: 6
-  
+
   metacognitive:
     position: [80, 30]
     size: [22, 16]
@@ -41,7 +54,7 @@ components:
     label: "Metacognitive\nExecutive"
     description: "Reflective self-monitoring"
     zorder: 6
-  
+
   evolutionary:
     position: [25, 20]
     size: [22, 16]
@@ -49,7 +62,7 @@ components:
     label: "Evolutionary\nOptimizer"
     description: "Structure adaptation"
     zorder: 6
-  
+
   simulation:
     position: [50, 20]
     size: [22, 14]
@@ -66,35 +79,35 @@ connections:
     width: 2
     color: "#2c3e50"
     bidirectional: true
-  
+
   - source: cif
     target: knowledge
     curve: 0.1
     width: 2
     color: "#2c3e50"
     bidirectional: true
-  
+
   - source: cif
     target: metacognitive
     curve: 0.1
     width: 2
     color: "#2c3e50"
     bidirectional: true
-  
+
   - source: metacognitive
     target: evolutionary
     curve: 0.1
     width: 2
     color: "#2c3e50"
     bidirectional: true
-  
+
   - source: evolutionary
     target: simulation
     curve: 0.1
     width: 2
     color: "#2c3e50"
     bidirectional: true
-  
+
   - source: simulation
     target: cif
     curve: 0.3
@@ -108,17 +121,17 @@ conscious_fields:
     size: [28, 28]
     alpha: 0.8
     color: "#42d7f5"
-  
+
   reflective:
     size: [34, 34]
     alpha: 0.6
     color: "#42f5b3"
-  
+
   peripheral:
     size: [40, 40]
     alpha: 0.4
     color: "#42f5f5"
-  
+
   prospective:
     size: [46, 46]
     alpha: 0.3
@@ -293,17 +306,17 @@ processing_scales:
     radius: 15
     dash_pattern: [1, 1]
     color: "#42f584"
-  
+
   cognitive:
     radius: 25
     dash_pattern: [2, 1]
     color: "#42f5b3"
-  
+
   learning:
     radius: 35
     dash_pattern: [3, 2]
     color: "#42d7f5"
-  
+
   developmental:
     radius: 45
     dash_pattern: [5, 3]

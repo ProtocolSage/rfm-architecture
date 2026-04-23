@@ -25,7 +25,7 @@ from enum import Enum
 
 class LogLevel(str, Enum):
     """Log levels for the application."""
-    
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"
@@ -35,7 +35,7 @@ class LogLevel(str, Enum):
 
 class LogCategory(str, Enum):
     """Log categories for structured logging."""
-    
+
     CONNECTION = "connection"     # WebSocket connection events
     OPERATION = "operation"       # Operation lifecycle events
     PERFORMANCE = "performance"   # Performance metrics
@@ -47,7 +47,7 @@ class LogCategory(str, Enum):
 
 class StructuredLogRecord(logging.LogRecord):
     """Enhanced LogRecord with structured data capabilities."""
-    
+
     def __init__(self, *args, **kwargs):
         """Initialize the log record with structured data support."""
         super().__init__(*args, **kwargs)
@@ -63,25 +63,25 @@ class StructuredLogRecord(logging.LogRecord):
 
 class StructuredLogger(logging.Logger):
     """Enhanced logger with support for structured logging."""
-    
+
     def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
         """Create a structured log record."""
         if extra is None:
             extra = {}
-            
+
         # Create record with StructuredLogRecord
         record = StructuredLogRecord(name, level, fn, lno, msg, args, exc_info, func, sinfo)
-        
+
         # Add extra fields
         for key, value in extra.items():
             setattr(record, key, value)
-            
+
         return record
-    
-    def structured_log(self, 
-                    level: Union[int, str], 
-                    msg: str, 
-                    category: LogCategory, 
+
+    def structured_log(self,
+                    level: Union[int, str],
+                    msg: str,
+                    category: LogCategory,
                     correlation_id: Optional[str] = None,
                     operation_id: Optional[str] = None,
                     component: Optional[str] = None,
@@ -90,7 +90,7 @@ class StructuredLogger(logging.Logger):
                     **kwargs) -> None:
         """
         Log a structured message.
-        
+
         Args:
             level: Log level
             msg: Log message
@@ -105,11 +105,11 @@ class StructuredLogger(logging.Logger):
         # Get numeric level if string
         if isinstance(level, str):
             level = logging.getLevelName(level)
-            
+
         # Set correlation ID on current thread if provided
         if correlation_id:
             threading.current_thread().correlation_id = correlation_id
-            
+
         # Create extra fields
         extra = {
             "category": category,
@@ -118,23 +118,23 @@ class StructuredLogger(logging.Logger):
             "context": context or {},
             "timing": timing or {}
         }
-        
+
         # Add additional fields
         for key, value in kwargs.items():
             extra[key] = value
-            
+
         # Log the message
         self.log(level, msg, extra=extra)
 
 
 class JSONFormatter(logging.Formatter):
     """JSON formatter for structured logging."""
-    
+
     def __init__(self, **kwargs):
         """Initialize the JSON formatter."""
         super().__init__()
         self.additional_fields = kwargs
-    
+
     def format(self, record):
         """Format the record as JSON."""
         # Create base structure
@@ -151,13 +151,13 @@ class JSONFormatter(logging.Formatter):
             "thread": record.thread,
             "host": getattr(record, "host", socket.gethostname())
         }
-        
+
         # Add structured fields
-        for field in ["category", "correlation_id", "context", "event_id", 
+        for field in ["category", "correlation_id", "context", "event_id",
                      "operation_id", "component", "timing"]:
             if hasattr(record, field) and getattr(record, field) is not None:
                 log_data[field] = getattr(record, field)
-                
+
         # Add exception info if present
         if record.exc_info:
             log_data["exception"] = {
@@ -165,29 +165,29 @@ class JSONFormatter(logging.Formatter):
                 "message": str(record.exc_info[1]),
                 "traceback": traceback.format_exception(*record.exc_info)
             }
-            
+
         # Add additional fields
         for key, value in self.additional_fields.items():
             if key not in log_data:
                 log_data[key] = value
-        
+
         # Convert to JSON
         return json.dumps(log_data)
 
 
 class RotatingFileHandlerWithCompression(logging.handlers.RotatingFileHandler):
     """Rotating file handler with compression support."""
-    
+
     def __init__(self, *args, **kwargs):
         """Initialize the handler with compression support."""
         self.compress_backend = kwargs.pop("compress_backend", "gzip")
         super().__init__(*args, **kwargs)
-    
+
     def doRollover(self):
         """Compress log file after rollover."""
         # Perform normal rollover
         super().doRollover()
-        
+
         # Compress the rolled-over file
         if self.compress_backend:
             try:
@@ -216,7 +216,7 @@ def configure_logging(
 ) -> None:
     """
     Configure application logging.
-    
+
     Args:
         app_name: Application name for log files
         log_dir: Directory for log files (default: ./logs)
@@ -229,29 +229,28 @@ def configure_logging(
         correlation_id: Optional correlation ID to set on current thread
     """
     # Convert LogLevel enums to valid types for handlers
-    from .logging_config import LogLevel  # ensure reference to LogLevel in this scope
     if isinstance(console_level, LogLevel):
         console_level = console_level.value
     if isinstance(file_level, LogLevel):
         file_level = file_level.value
     # Register custom logger class
     logging.setLoggerClass(StructuredLogger)
-    
+
     # Set correlation ID on current thread if provided
     if correlation_id:
         threading.current_thread().correlation_id = correlation_id
-    
+
     # Create log directory
     if log_dir is None:
         log_dir = os.path.join(os.getcwd(), "logs")
-        
+
     os.makedirs(log_dir, exist_ok=True)
-    
+
     # Create formatters
     console_formatter = logging.Formatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    
+
     # Create JSON formatter for file logging if requested
     if json_format:
         file_formatter = JSONFormatter(application=app_name)
@@ -260,16 +259,16 @@ def configure_logging(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s - "
             "[%(category)s] [%(correlation_id)s] [%(operation_id)s] [%(component)s]"
         )
-    
+
     # Create handlers
     console_handler = logging.StreamHandler()
     console_handler.setLevel(console_level)
     console_handler.setFormatter(console_formatter)
-    
+
     # Create log file name with timestamp
     timestamp = datetime.now().strftime("%Y%m%d")
     log_file = os.path.join(log_dir, f"{app_name}_{timestamp}.log")
-    
+
     # Create file handler
     file_handler = RotatingFileHandlerWithCompression(
         log_file,
@@ -279,19 +278,19 @@ def configure_logging(
     )
     file_handler.setLevel(file_level)
     file_handler.setFormatter(file_formatter)
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.DEBUG)  # Allow all levels, handlers will filter
-    
+
     # Remove existing handlers
     for handler in root_logger.handlers[:]:
         root_logger.removeHandler(handler)
-        
+
     # Add new handlers
     root_logger.addHandler(console_handler)
     root_logger.addHandler(file_handler)
-    
+
     # Log configuration
     logger = logging.getLogger(__name__)
     logger.structured_log(
@@ -313,10 +312,10 @@ def configure_logging(
 def get_logger(name: str) -> StructuredLogger:
     """
     Get a structured logger.
-    
+
     Args:
         name: Logger name
-        
+
     Returns:
         StructuredLogger instance
     """
@@ -326,10 +325,10 @@ def get_logger(name: str) -> StructuredLogger:
 # Structured logging context manager for timing operations
 class TimingContext:
     """Context manager for timing operations with structured logging."""
-    
-    def __init__(self, 
-                logger: StructuredLogger, 
-                operation: str, 
+
+    def __init__(self,
+                logger: StructuredLogger,
+                operation: str,
                 level: LogLevel = LogLevel.DEBUG,
                 category: LogCategory = LogCategory.PERFORMANCE,
                 correlation_id: Optional[str] = None,
@@ -338,7 +337,7 @@ class TimingContext:
                 context: Optional[Dict[str, Any]] = None):
         """
         Initialize the timing context.
-        
+
         Args:
             logger: Logger to use
             operation: Operation name
@@ -359,11 +358,11 @@ class TimingContext:
         self.context = context or {}
         self.start_time = None
         self.end_time = None
-        
+
     def __enter__(self):
         """Start timing."""
         self.start_time = time.time()
-        
+
         # Log start of operation
         self.logger.structured_log(
             self.level,
@@ -375,25 +374,25 @@ class TimingContext:
             context=self.context,
             timing={"start_time": self.start_time}
         )
-        
+
         return self
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """End timing and log results."""
         self.end_time = time.time()
         duration = self.end_time - self.start_time
-        
+
         # Create timing information
         timing = {
             "start_time": self.start_time,
             "end_time": self.end_time,
             "duration": duration
         }
-        
+
         # Update context
         context = self.context.copy()
         context["duration_ms"] = duration * 1000
-        
+
         if exc_type is not None:
             # Log error
             self.logger.structured_log(
@@ -422,7 +421,7 @@ class TimingContext:
                 timing=timing,
                 success=True
             )
-            
+
         # Don't suppress exceptions
         return False
 
@@ -434,13 +433,13 @@ def log_timing(operation: str,
              component: Optional[str] = None):
     """
     Decorator for timing function execution with structured logging.
-    
+
     Args:
         operation: Operation name
         level: Log level
         category: Log category
         component: Optional component name
-        
+
     Returns:
         Function decorator
     """
@@ -448,17 +447,17 @@ def log_timing(operation: str,
         def wrapper(*args, **kwargs):
             # Get logger from module name
             logger = get_logger(func.__module__)
-            
+
             # Get correlation ID and operation ID from kwargs if present
             correlation_id = kwargs.pop("correlation_id", None)
             operation_id = kwargs.pop("operation_id", None)
-            
+
             # Create context
             context = {
                 "function": func.__name__,
                 "module": func.__module__
             }
-            
+
             # Add timing context
             with TimingContext(
                 logger,
@@ -471,7 +470,7 @@ def log_timing(operation: str,
                 context
             ):
                 return func(*args, **kwargs)
-                
+
         return wrapper
-    
+
     return decorator
