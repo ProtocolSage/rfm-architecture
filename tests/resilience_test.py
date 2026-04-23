@@ -455,21 +455,38 @@ class ResilienceTest:
 class ConnectionResilienceTest(ResilienceTest):
     """Test client reconnection capabilities."""
     
-    def __init__(self, server_host: str = "localhost", server_port: int = 8765):
+    def __init__(
+        self,
+        server_host: str = "localhost",
+        server_port: int = 8765,
+        name: str = "connection_resilience",
+        description: str = "Tests client reconnection capabilities during server restarts",
+        duration: float = 120.0,
+        restart_count: int = 3,
+        restart_interval: float = 10.0,
+        **_: Any,
+    ):
         """
         Initialize the connection resilience test.
         
         Args:
             server_host: WebSocket server host
             server_port: WebSocket server port
+            name: Test name
+            description: Test description
+            duration: Test duration in seconds
+            restart_count: Number of server restarts to perform
+            restart_interval: Delay between restarts in seconds
         """
         super().__init__(
-            name="connection_resilience",
-            description="Tests client reconnection capabilities during server restarts",
-            duration=120.0,
+            name=name,
+            description=description,
+            duration=duration,
             server_host=server_host,
             server_port=server_port
         )
+        self.restart_count = restart_count
+        self.restart_interval = restart_interval
         
     async def run_test(self) -> None:
         """Run the test implementation."""
@@ -520,9 +537,9 @@ class ConnectionResilienceTest(ResilienceTest):
         await asyncio.sleep(5)
         
         # Restart server multiple times
-        for i in range(3):
+        for i in range(self.restart_count):
             # Record event
-            self._record_event("test_step", f"Server restart {i+1}/3")
+            self._record_event("test_step", f"Server restart {i+1}/{self.restart_count}")
             
             # Restart server
             self._restart_server()
@@ -559,7 +576,7 @@ class ConnectionResilienceTest(ResilienceTest):
                 return
                 
             # Wait between restarts
-            await asyncio.sleep(10)
+            await asyncio.sleep(self.restart_interval)
             
         # Wait for operations to complete
         try:
@@ -579,23 +596,37 @@ class ConnectionResilienceTest(ResilienceTest):
 class OperationResilienceTest(ResilienceTest):
     """Test operation state preservation during reconnection."""
     
-    def __init__(self, server_host: str = "localhost", server_port: int = 8765):
+    def __init__(
+        self,
+        server_host: str = "localhost",
+        server_port: int = 8765,
+        name: str = "operation_resilience",
+        description: str = "Tests operation state preservation during reconnection",
+        duration: float = 180.0,
+        operation_count: int = 3,
+        **_: Any,
+    ):
         """
         Initialize the operation resilience test.
         
         Args:
             server_host: WebSocket server host
             server_port: WebSocket server port
+            name: Test name
+            description: Test description
+            duration: Test duration in seconds
+            operation_count: Number of long-running operations to start
         """
         super().__init__(
-            name="operation_resilience",
-            description="Tests operation state preservation during reconnection",
-            duration=180.0,
+            name=name,
+            description=description,
+            duration=duration,
             server_host=server_host,
             server_port=server_port
         )
         
         # Operation tracking
+        self.operation_count = operation_count
         self.operations: Dict[str, Dict[str, Any]] = {}
         self.completed_operations: Set[str] = set()
         self.operation_statuses: Dict[str, Dict[str, Any]] = {}
@@ -643,7 +674,7 @@ class OperationResilienceTest(ResilienceTest):
         self._record_event("client_connected", "Client connected to server")
         
         # Start long-running operations
-        long_operations = 3
+        long_operations = self.operation_count
         for i in range(long_operations):
             # Generate operation
             operation_id = str(uuid.uuid4())
@@ -996,25 +1027,40 @@ class OperationResilienceTest(ResilienceTest):
 class LoadResilienceTest(ResilienceTest):
     """Test system behavior under high load."""
     
-    def __init__(self, server_host: str = "localhost", server_port: int = 8765):
+    def __init__(
+        self,
+        server_host: str = "localhost",
+        server_port: int = 8765,
+        name: str = "load_resilience",
+        description: str = "Tests system behavior under high load with many clients and operations",
+        duration: float = 180.0,
+        client_count: int = 5,
+        operations_per_client: int = 10,
+        **_: Any,
+    ):
         """
         Initialize the load resilience test.
         
         Args:
             server_host: WebSocket server host
             server_port: WebSocket server port
+            name: Test name
+            description: Test description
+            duration: Test duration in seconds
+            client_count: Number of concurrent clients
+            operations_per_client: Number of operations per client
         """
         super().__init__(
-            name="load_resilience",
-            description="Tests system behavior under high load with many clients and operations",
-            duration=180.0,
+            name=name,
+            description=description,
+            duration=duration,
             server_host=server_host,
             server_port=server_port
         )
         
         # Load testing parameters
-        self.client_count = 5
-        self.operations_per_client = 10
+        self.client_count = client_count
+        self.operations_per_client = operations_per_client
         self.updates_per_operation = 20
         
         # Performance tracking
