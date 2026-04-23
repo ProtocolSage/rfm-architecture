@@ -41,6 +41,12 @@ logs/
 error_logs/
 reports/
 test-results/
+.env.local
+.env.*.local
+config/api_keys.json
+tools/ssl/certs/
+playwright-report/
+HANDOFF.md
 
 # Claude
 **/.claude/settings.local.json

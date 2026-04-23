@@ -1,0 +1,7 @@
+
+
+# UI optimization settings (for CPU-only mode)
+ui:
+  reduce_animations: true
+  disable_blur_effects: true
+  simplify_rendering: true
