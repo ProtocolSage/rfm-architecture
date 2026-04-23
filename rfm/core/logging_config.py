@@ -319,7 +319,13 @@ def get_logger(name: str) -> StructuredLogger:
     Returns:
         StructuredLogger instance
     """
-    return logging.getLogger(name)
+    logging.setLoggerClass(StructuredLogger)
+    logger = logging.getLogger(name)
+
+    if not isinstance(logger, StructuredLogger):
+        logger.__class__ = StructuredLogger
+
+    return logger
 
 
 # Structured logging context manager for timing operations
