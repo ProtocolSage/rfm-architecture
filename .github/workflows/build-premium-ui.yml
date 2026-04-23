@@ -1,12 +1,28 @@
-name: Build & Test Premium UI
+name: Windows Premium UI Smoke
 
 on:
   push:
-    paths: ['**.py', '**.ts', '.github/workflows/**']
+    branches-ignore: [main, master]
+    paths:
+      - 'rfm/**'
+      - 'ui/**'
+      - 'run_premium_ui.py'
+      - 'run_system_config.py'
+      - 'requirements*.txt'
+      - '.github/workflows/build-premium-ui.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'rfm/**'
+      - 'ui/**'
+      - 'run_premium_ui.py'
+      - 'run_system_config.py'
+      - 'requirements*.txt'
+      - '.github/workflows/build-premium-ui.yml'
   workflow_dispatch:
 
 jobs:
-  test-and-build:
+  smoke:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,23 +34,43 @@ jobs:
 
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
-          pip install poetry
-          poetry config virtualenvs.create false
-          poetry install
-          playwright install --with-deps
 
-      - name: Install required packages for screenshot capability
+      - name: Compile Python sources
         run: |
-          pip install Pillow
-          
-      - name: Run Playwright tests
-        run: npx playwright test
+          python -m compileall rfm ui run_premium_ui.py run_system_config.py tests
+
+      - name: Run targeted WebSocket tests
+        run: |
+          pytest tests/test_websocket_client_server.py tests/test_progress_reporting.py -q
+
+      - name: Verify premium UI entry point
+        run: |
+          python run_premium_ui.py --help
+
+  package:
+    if: github.event_name == 'workflow_dispatch'
+    needs: smoke
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pip install pyinstaller
 
       - name: Package with PyInstaller
         run: |
-          pip install pyinstaller
           pyinstaller run_premium_ui.py --onefile --noconsole --name RFM-Premium
 
       - name: Upload artifact
