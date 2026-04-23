@@ -43,6 +43,8 @@ jobs:
           python -m compileall rfm ui run_premium_ui.py run_system_config.py tests
 
       - name: Run targeted WebSocket tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/ui
         run: |
           pytest tests/test_websocket_client_server.py tests/test_progress_reporting.py -q
 

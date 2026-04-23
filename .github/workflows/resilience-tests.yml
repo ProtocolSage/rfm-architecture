@@ -46,6 +46,8 @@ jobs:
           pip install -r requirements_dev.txt
       
       - name: Run unit tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/ui
         run: |
           pytest tests/test_progress_reporting.py -v
       
