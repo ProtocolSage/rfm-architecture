@@ -478,6 +478,22 @@ class WebSocketClient:
                 except Exception as e:
                     logger.error(f"Error in {event_type} callback: {e}")
                     logger.debug(traceback.format_exc())
+
+    def _notify_callbacks_sync(self, event_type: str, data: Dict[str, Any]) -> None:
+        """
+        Notify callbacks from synchronous client methods.
+
+        Args:
+            event_type: Type of event
+            data: Event data
+        """
+        if event_type in self.callbacks:
+            for callback in self.callbacks[event_type]:
+                try:
+                    callback(data)
+                except Exception as e:
+                    logger.error(f"Error in {event_type} callback: {e}")
+                    logger.debug(traceback.format_exc())
     
     async def _notify_connection_status(self, status: str, details: Dict[str, Any] = None) -> None:
         """
@@ -583,10 +599,26 @@ class WebSocketClient:
         Args:
             operation_id: ID of the operation to cancel
         """
+        if not self.connected or not self.websocket:
+            logger.warning("Cannot cancel operation: not connected")
+            return
+
         self.send_message({
             "type": "cancel_operation",
             "operation_id": operation_id,
             "timestamp": time.time()
+        })
+
+        if operation_id in self.operations:
+            op = self.operations[operation_id]
+            op.status = OperationStatus.CANCELED
+            op.last_update_time = time.time()
+
+        self._notify_callbacks_sync("operation_canceled", {
+            "type": "operation_canceled",
+            "operation_id": operation_id,
+            "timestamp": time.time(),
+            "details": {"source": "local_cancel_request"},
         })
     
     def get_operation_details(self, operation_id: str) -> None:
