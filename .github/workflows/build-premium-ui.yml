@@ -1,0 +1,44 @@
+name: Build & Test Premium UI
+
+on:
+  push:
+    paths: ['**.py', '**.ts', '.github/workflows/**']
+  workflow_dispatch:
+
+jobs:
+  test-and-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install
+          playwright install --with-deps
+
+      - name: Install required packages for screenshot capability
+        run: |
+          pip install Pillow
+          
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Package with PyInstaller
+        run: |
+          pip install pyinstaller
+          pyinstaller run_premium_ui.py --onefile --noconsole --name RFM-Premium
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RFM-Premium-Windows
+          path: dist/RFM-Premium.exe
