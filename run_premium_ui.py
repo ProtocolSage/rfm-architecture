@@ -6,20 +6,12 @@ This script launches the RFM Architecture Visualizer with the enhanced
 premium UI components and styling.
 """
 
-import os
 import sys
 import argparse
 import logging
 from pathlib import Path
 
-# Ensure we can import from the RFM Architecture package
-project_root = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(project_root)
-# Also add ui directory to path explicitly for rfm_ui imports
-ui_path = os.path.join(project_root, 'ui')
-sys.path.append(ui_path)
-
-from ui.rfm_ui.ui.app_premium import PremiumRFMApp
+from rfm_ui.ui.app_premium import PremiumRFMApp
 
 
 def parse_args():

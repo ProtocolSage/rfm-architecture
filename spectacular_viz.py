@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """Script to run the RFM visualization with spectacular effects."""
 
-import sys
 import os
 import argparse
 from pathlib import Path
@@ -9,9 +8,6 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 import time
-
-# Add the current directory to the path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import necessary modules
 from rfm.config.settings import ConfigLoader

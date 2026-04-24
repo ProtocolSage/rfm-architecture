@@ -53,9 +53,8 @@ The system uses a JSON-based message protocol for communication:
 
 The backend components are implemented in the following files:
 
-- `/rfm/core/websocket_server.py`: Basic WebSocket server for broadcasting progress updates.
-- `/rfm/core/websocket_server_enhanced.py`: Enhanced WebSocket server with resilience features.
-- `/rfm/core/websocket_server_secure.py`: Secure WebSocket server with SSL/TLS support.
+- `/rfm/core/websocket_server_enhanced.py`: WebSocket progress server with threaded dispatch, cancellation, and resilience features.
+- `/rfm/core/websocket_server_secure.py`: Secure variant of the enhanced server with SSL/TLS support.
 - `/rfm/core/auth.py`: JWT authentication for WebSocket connections.
 - `/rfm/core/rate_limiting.py`: Rate limiting for WebSocket messages.
 - `/rfm/core/monitoring.py`: Resource and performance monitoring.
@@ -78,9 +77,8 @@ The UI components are implemented in the following files:
 
 Standalone scripts are provided to run the WebSocket servers independently:
 
-- `/run_websocket_server.py`: Script to start the basic WebSocket server.
-- `/run_websocket_server_enhanced.py`: Script to start the enhanced WebSocket server with resilience features.
-- `/run_websocket_server_secure.py`: Script to start the secure WebSocket server with SSL/TLS support.
+- `/run_websocket_server.py`: Launch the enhanced WebSocket server (plain `ws://`).
+- `/run_secure_websocket_server.py`: Launch the secure WebSocket server with SSL/TLS; pass `--config <file>` to enable JWT auth + rate limiting (production mode).
 
 ### Deployment
 

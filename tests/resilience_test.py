@@ -527,7 +527,7 @@ class ConnectionResilienceTest(ResilienceTest):
         operations_task = asyncio.create_task(
             self._run_operations(
                 client,
-                count=10,
+                count=max(1, self.restart_count + 1),
                 duration_range=(8.0, 15.0),
                 interval_range=(1.0, 3.0)
             )
@@ -578,12 +578,17 @@ class ConnectionResilienceTest(ResilienceTest):
             # Wait between restarts
             await asyncio.sleep(self.restart_interval)
             
-        # Wait for operations to complete
+        # Wait for operations to complete. Treat a timeout as a real failure:
+        # silently continuing on ``asyncio.TimeoutError`` masked cancellation-
+        # and reconnection-path regressions in earlier runs.
         try:
             await asyncio.wait_for(operations_task, timeout=60)
         except asyncio.TimeoutError:
-            logger.warning("Operations timed out, but test can still succeed")
-            
+            operations_task.cancel()
+            self._record_event("test_failed", "Operations did not complete within 60s")
+            self._update_results(False, "Operations did not complete within 60s")
+            return
+
         # Check final client state
         if client.is_connected():
             self._record_event("test_complete", "Client maintained connection through all server restarts")
@@ -627,6 +632,12 @@ class OperationResilienceTest(ResilienceTest):
         
         # Operation tracking
         self.operation_count = operation_count
+        self.operation_duration = max(5.0, min(60.0, duration * 0.5))
+        self.restart_count = max(1, min(3, int(duration // 20) or 1))
+        self.restart_interval = min(
+            20.0,
+            max(2.0, duration / (self.restart_count + 1) / 2),
+        )
         self.operations: Dict[str, Dict[str, Any]] = {}
         self.completed_operations: Set[str] = set()
         self.operation_statuses: Dict[str, Dict[str, Any]] = {}
@@ -684,7 +695,8 @@ class OperationResilienceTest(ResilienceTest):
             self.operations[operation_id] = {
                 "operation_id": operation_id,
                 "name": operation_name,
-                "duration": 60.0,  # 60 second operation
+                "duration": self.operation_duration,
+                "start_time": time.time(),
                 "started": False,
                 "completed": False,
                 "updates": 0
@@ -700,7 +712,7 @@ class OperationResilienceTest(ResilienceTest):
                     "details": {
                         "test_id": self.name,
                         "operation_number": i + 1,
-                        "expected_duration": 60.0
+                        "expected_duration": self.operation_duration
                     }
                 },
                 "timestamp": time.time()
@@ -716,9 +728,9 @@ class OperationResilienceTest(ResilienceTest):
         await asyncio.sleep(5)
         
         # Restart server multiple times
-        for i in range(3):
+        for i in range(self.restart_count):
             # Record event
-            self._record_event("test_step", f"Server restart {i+1}/3")
+            self._record_event("test_step", f"Server restart {i+1}/{self.restart_count}")
             
             # Restart server
             self._restart_server()
@@ -789,15 +801,19 @@ class OperationResilienceTest(ResilienceTest):
             )
             
             # Wait between restarts
-            await asyncio.sleep(20)
+            await asyncio.sleep(self.restart_interval)
             
-        # Wait for operations to complete
+        # Wait for operations to complete. A timeout here means operations
+        # failed to resurrect through the restart cycle — surface it as a
+        # real failure instead of silently recording a partial-completion.
         try:
             await asyncio.wait_for(update_task, timeout=120)
         except asyncio.TimeoutError:
-            logger.warning("Operations timed out")
             update_task.cancel()
-            
+            self._record_event("test_failed", "Operations did not complete within 120s")
+            self._update_results(False, "Operations did not complete within 120s")
+            return
+
         # Check completed operations
         completion_count = len(self.completed_operations)
         expected_completions = len(self.operations)
@@ -842,64 +858,52 @@ class OperationResilienceTest(ResilienceTest):
                 if not client.is_connected():
                     break
                     
-                # Check if operation exists in client
-                if op_id in client.operations:
-                    # Get client operation
-                    client_op = client.operations[op_id]
-                    
-                    # Skip if not active
-                    if client_op.status not in ("pending", "running", "paused"):
-                        continue
-                        
-                    # Calculate progress based on time
-                    elapsed = time.time() - client_op.start_time if client_op.start_time else 0
-                    expected_duration = op_data["duration"]
-                    progress = min(elapsed / expected_duration * 100, 99.0)  # Cap at 99%
-                    
-                    # Send progress update
+                # The test driver owns these synthetic operations. A fresh
+                # server restart can legitimately clear the client's cached
+                # operation list, but the driver must continue sending updates
+                # after reconnect to verify the transport can recover.
+                elapsed = time.time() - op_data["start_time"]
+                expected_duration = op_data["duration"]
+                progress = min(elapsed / expected_duration * 100, 99.0)
+
+                await client.send_message({
+                    "type": "progress_update",
+                    "data": {
+                        "operation_id": op_id,
+                        "operation_type": "test",
+                        "progress": progress,
+                        "status": "running",
+                        "current_step": f"Processing {progress:.0f}%",
+                        "timestamp": time.time()
+                    }
+                })
+
+                op_data["updates"] += 1
+
+                if elapsed >= expected_duration:
                     await client.send_message({
-                        "type": "progress_update",
-                        "data": {
-                            "operation_id": op_id,
-                            "operation_type": "test",
-                            "progress": progress,
-                            "status": "running",
-                            "current_step": f"Processing {progress:.0f}%",
-                            "timestamp": time.time()
-                        }
+                        "type": "operation_completed",
+                        "operation_id": op_id,
+                        "details": {
+                            "duration": elapsed,
+                            "test_id": self.name,
+                            "updates": op_data["updates"]
+                        },
+                        "timestamp": time.time()
                     })
-                    
-                    # Track update
-                    op_data["updates"] += 1
-                    
-                    # Check if operation should complete
-                    if elapsed >= expected_duration:
-                        # Complete operation
-                        await client.send_message({
-                            "type": "operation_completed",
+
+                    op_data["completed"] = True
+                    self.completed_operations.add(op_id)
+
+                    self._record_event(
+                        "operation_complete",
+                        f"Operation {op_data['name']} completed",
+                        {
                             "operation_id": op_id,
-                            "details": {
-                                "duration": elapsed,
-                                "test_id": self.name,
-                                "updates": op_data["updates"]
-                            },
-                            "timestamp": time.time()
-                        })
-                        
-                        # Mark as completed locally
-                        op_data["completed"] = True
-                        self.completed_operations.add(op_id)
-                        
-                        # Record event
-                        self._record_event(
-                            "operation_complete",
-                            f"Operation {op_data['name']} completed",
-                            {
-                                "operation_id": op_id,
-                                "duration": elapsed,
-                                "updates": op_data["updates"]
-                            }
-                        )
+                            "duration": elapsed,
+                            "updates": op_data["updates"]
+                        }
+                    )
                         
             # Wait before next update round
             await asyncio.sleep(1.0)

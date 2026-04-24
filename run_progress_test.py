@@ -32,7 +32,7 @@ logger = logging.getLogger("progress_test")
 
 # Import components
 try:
-    from rfm.core.websocket_server import start_websocket_server
+    from rfm.core.websocket_server_enhanced import start_websocket_server
     from rfm.core.progress import ProgressReporter, get_progress_manager
 except ImportError:
     logger.error("Failed to import required modules. Make sure you're running this script from the project root.")

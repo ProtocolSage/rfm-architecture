@@ -20,7 +20,7 @@ from typing import Dict, Any, List, Optional
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import components to test
-from rfm.core.websocket_server import start_websocket_server
+from rfm.core.websocket_server_enhanced import start_websocket_server
 from rfm.core.progress import OperationStatus, ProgressReporter, get_progress_manager
 from ui.rfm_ui.websocket_client import get_websocket_client, WebSocketClient
 from ui.rfm_ui.components.progress_manager import get_progress_manager as get_ui_progress_manager

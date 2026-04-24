@@ -15,10 +15,6 @@ import signal
 from typing import Dict, Any, Optional
 from pathlib import Path
 
-# Add parent directory to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, script_dir)
-
 # Import required modules
 try:
     from rfm.core.logging_config import configure_logging, LogLevel, LogCategory

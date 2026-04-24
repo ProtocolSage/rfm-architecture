@@ -42,12 +42,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Editable install resolves both `rfm` and `rfm_ui` (no PYTHONPATH needed).
+          pip install -e .
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
-      
+
       - name: Run unit tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}/ui
         run: |
           pytest tests/test_progress_reporting.py -v
       
@@ -80,10 +80,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Editable install resolves both `rfm` and `rfm_ui` (no PYTHONPATH needed).
+          pip install -e .
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
           pip install matplotlib psutil
-      
+
+      # Generate self-signed SSL certs for the secure WebSocket server.
+      # Devs must run this once locally too — see `just ssl-certs` or
+      # `tools/ssl/generate_certs.sh` directly (documented in README).
       - name: Generate SSL certificates
         run: |
           mkdir -p tools/ssl/certs

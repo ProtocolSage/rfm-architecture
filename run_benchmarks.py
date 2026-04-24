@@ -7,12 +7,10 @@ for the RFM Architecture fractals, generate reports, and track performance
 over time.
 """
 
-import os
 import sys
 import argparse
 import logging
 import time
-from datetime import datetime
 from pathlib import Path
 
 from rfm.benchmarks.fractal_benchmark import FractalBenchmark
@@ -23,19 +21,14 @@ def setup_logging():
     log_dir = Path("./logs")
     log_dir.mkdir(exist_ok=True)
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = log_dir / f"benchmark_run_{timestamp}.log"
-    
-    # Configure root logger
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler()
-        ]
+    from rfm.core.logging_config import configure_logging, LogLevel
+
+    configure_logging(
+        app_name="benchmark_runner",
+        log_dir=str(log_dir),
+        console_level=LogLevel.INFO,
     )
-    
+
     return logging.getLogger("benchmark_runner")
 
 

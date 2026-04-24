@@ -6,9 +6,6 @@ import os
 import argparse
 from pathlib import Path
 
-# Add the current directory to the path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from rfm.main import main
 
 if __name__ == "__main__":

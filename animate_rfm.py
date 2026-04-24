@@ -3,7 +3,6 @@
 RFM Animation Script - Creates spectacular animated visualizations
 of the Recursive Fractal Mind architecture with premium aesthetics.
 """
-import os
 import sys
 import time
 import logging
@@ -13,9 +12,6 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
-# Add the current directory to the path for imports
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import necessary modules
 from rfm.config.settings import ConfigLoader

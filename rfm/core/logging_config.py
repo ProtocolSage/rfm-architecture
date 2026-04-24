@@ -235,8 +235,6 @@ def configure_logging(
         console_level = console_level.value
     if isinstance(file_level, LogLevel):
         file_level = file_level.value
-    # Register custom logger class
-    logging.setLoggerClass(StructuredLogger)
 
     # Set correlation ID on current thread if provided
     if correlation_id:
@@ -312,22 +310,13 @@ def configure_logging(
 
 
 def get_logger(name: str) -> StructuredLogger:
+    """Return a StructuredLogger for ``name``.
+
+    The logger class is registered once at ``rfm`` package import time
+    (see ``rfm/__init__.py``), so ``logging.getLogger`` always hands back
+    a ``StructuredLogger`` here — no runtime ``__class__`` mutation needed.
     """
-    Get a structured logger.
-
-    Args:
-        name: Logger name
-
-    Returns:
-        StructuredLogger instance
-    """
-    logging.setLoggerClass(StructuredLogger)
-    logger = logging.getLogger(name)
-
-    if not isinstance(logger, StructuredLogger):
-        logger.__class__ = StructuredLogger
-
-    return logger
+    return logging.getLogger(name)  # type: ignore[return-value]
 
 
 # Structured logging context manager for timing operations

@@ -42,20 +42,12 @@ class RFMApp:
         self.config_file = config_file or "config.yaml"
         self.log_dir = log_dir or "logs"
         
-        # Ensure log directory exists
+        # Ensure log directory exists (root logging is configured by the
+        # application entry point — see rfm_ui/main.py or run_premium_ui.py —
+        # so we only record a per-app logger here, no handler wiring).
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
-            
-        # Configure logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(os.path.join(self.log_dir, "rfm_ui.log")),
-                logging.StreamHandler()
-            ]
-        )
-        
+
         self.logger = logging.getLogger("rfm_ui")
         
         # Initialize error handler

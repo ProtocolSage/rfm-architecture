@@ -19,23 +19,11 @@ import uuid
 from typing import Dict, Any, Optional, List
 import random
 
-# Add parent directory to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, script_dir)
-
-# Set up structured logger class BEFORE importing modules
-try:
-    from rfm.core.logging_config import StructuredLogger
-    import logging as _logging_setup
-    _logging_setup.setLoggerClass(StructuredLogger)
-except Exception as e:
-    print(f"Warning: Couldn't set StructuredLogger as default logger class: {e}")
-    print("Will fall back to standard logging")
-
-# Import required modules
+# Import required modules (importing rfm registers StructuredLogger as the
+# default logger class; see rfm/__init__.py).
 try:
     from rfm.core.logging_config import configure_logging, LogLevel, LogCategory
-    from ui.rfm_ui.websocket_client_enhanced import (
+    from rfm_ui.websocket_client_enhanced import (
         WebSocketClient, ReconnectionConfig, ConnectionState, MessageType, OperationStatus
     )
 except ImportError:

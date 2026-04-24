@@ -449,7 +449,7 @@ if __name__ == "__main__":
         # Core modules
         "rfm.core.fractal",
         "rfm.core.progress",
-        "rfm.core.websocket_server",
+        "rfm.core.websocket_server_enhanced",
         
         # UI modules
         "ui.rfm_ui.engine.core",

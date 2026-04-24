@@ -23,6 +23,7 @@ rfm-viz = "rfm.main:main"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.2"
+pytest-asyncio = "^0.23"
 flake8 = "^7.0"
 black = "^24.4"
 typing-extensions = "^4.10"
@@ -30,3 +31,16 @@ typing-extensions = "^4.10"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+markers = [
+    "resilience: long-running resilience tests that spawn real subprocess servers",
+    "integration: integration tests that require a live WebSocket server",
+]
+# Keep manual harnesses such as chaos_test.py, client_test.py, server_test.py,
+# resilience_test.py, and run_resilience_test.py out of default collection.
+# Use `just test-resilience` or an explicit path when intentionally running them.
+norecursedirs = [".git", ".venv", ".venv-mac", "node_modules", "dist", "build"]

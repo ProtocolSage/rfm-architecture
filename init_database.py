@@ -8,11 +8,6 @@ import argparse
 import logging
 import os
 import sys
-from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent
-sys.path.insert(0, str(project_root))
 
 from rfm.database.connection import init_db, close_db_connections
 from rfm.database.migrations.manager import upgrade

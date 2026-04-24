@@ -30,6 +30,7 @@ from .monitoring import (
     get_metrics_registry, get_connection_monitor,
     MetricType, HealthStatus, ConnectionMonitor
 )
+from .progress import get_progress_manager, OperationStatus, ProgressData
 
 
 # Configure logger
@@ -147,9 +148,11 @@ class ProgressServer:
         
         # Set up server storage
         self.server = None
+        self.loop: Optional[asyncio.AbstractEventLoop] = None
         self.clients: Dict[str, ClientInfo] = {}
         self.operations: Dict[str, Dict[str, Any]] = {}
         self.stop_event = asyncio.Event()
+        self.progress_manager = get_progress_manager()
         
         # Operation event handlers
         self.operation_handlers: Dict[str, List[Callable]] = {
@@ -214,6 +217,8 @@ class ProgressServer:
                 self.port,
                 process_request=self._process_request
             )
+            self.loop = asyncio.get_running_loop()
+            self.progress_manager.add_callback(self._on_progress_update)
             
             # Reset stop event
             self.stop_event.clear()
@@ -266,6 +271,7 @@ class ProgressServer:
             
         # Set stop event
         self.stop_event.set()
+        self.progress_manager.remove_callback(self._on_progress_update)
         
         # Log stop request
         logger.structured_log(
@@ -337,6 +343,7 @@ class ProgressServer:
         
         # Clear server reference
         self.server = None
+        self.loop = None
     
     async def _process_request(self, 
                              path: str, 
@@ -950,6 +957,7 @@ class ProgressServer:
         
         # Update operation in storage
         self.operations[operation_id] = operation
+        await self.progress_manager.cancel_operation(operation_id)
         
         # Broadcast cancellation request
         message = {
@@ -959,9 +967,88 @@ class ProgressServer:
         }
         
         await self._broadcast_message(message)
+        await self._send_message(connection_id, {
+            "type": MessageType.OPERATION_CANCELED,
+            "operation_id": operation_id,
+            "timestamp": time.time(),
+            "details": {"source": "cancel_operation"}
+        })
+        await self._send_message(connection_id, {
+            "type": "cancel_result",
+            "operation_id": operation_id,
+            "success": True,
+            "timestamp": time.time()
+        })
         
         # Update metrics
         self.metrics_registry.update_metric("operations.canceled", 1)
+
+    def _on_progress_update(self, progress_data: ProgressData) -> None:
+        """Bridge ProgressManager updates onto the WebSocket server loop."""
+        operation = self.operations.get(progress_data.operation_id, {
+            "operation_id": progress_data.operation_id,
+            "operation_type": progress_data.details.get("operation_type", "unknown"),
+            "name": progress_data.details.get("name", f"Operation {progress_data.operation_id}"),
+            "start_time": progress_data.timestamp,
+        })
+        operation.update({
+            "status": progress_data.status.value,
+            "progress": progress_data.progress,
+            "current_step": progress_data.current_step,
+            "total_steps": progress_data.total_steps,
+            "current_step_progress": progress_data.current_step_progress,
+            "last_update_time": progress_data.timestamp,
+            "details": progress_data.details,
+        })
+        self.operations[progress_data.operation_id] = operation
+
+        if self.loop is None or not self.loop.is_running():
+            logger.warning("Cannot broadcast progress update: WebSocket server loop is not running")
+            return
+
+        future = asyncio.run_coroutine_threadsafe(
+            self._broadcast_progress_update(progress_data),
+            self.loop,
+        )
+        future.add_done_callback(self._log_progress_broadcast_error)
+
+    def _log_progress_broadcast_error(self, future: asyncio.Future) -> None:
+        """Log asynchronous progress broadcast failures without blocking callers."""
+        try:
+            future.result()
+        except Exception as e:
+            logger.structured_log(
+                LogLevel.ERROR,
+                f"Error broadcasting progress update: {e}",
+                LogCategory.OPERATION,
+                component="websocket_server",
+                context={"server_id": self.server_id},
+                error=str(e),
+            )
+
+    async def _broadcast_progress_update(self, progress_data: ProgressData) -> None:
+        """Broadcast a ProgressManager update and any terminal operation event."""
+        await self._broadcast_message({
+            "type": MessageType.PROGRESS_UPDATE,
+            "timestamp": time.time(),
+            "data": progress_data.to_dict(),
+        })
+
+        terminal_message_type = {
+            OperationStatus.COMPLETED: MessageType.OPERATION_COMPLETED,
+            OperationStatus.FAILED: MessageType.OPERATION_FAILED,
+            OperationStatus.CANCELED: MessageType.OPERATION_CANCELED,
+        }.get(progress_data.status)
+
+        if terminal_message_type is None:
+            return
+
+        await self._broadcast_message({
+            "type": terminal_message_type,
+            "operation_id": progress_data.operation_id,
+            "timestamp": time.time(),
+            "details": progress_data.details,
+        })
     
     async def _process_operation_event(self, message: Dict[str, Any]) -> None:
         """

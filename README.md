@@ -36,10 +36,12 @@ A production-ready visualizer for the **Recursive Fractal Mind** cognitive archi
    # Install frontend dependencies
    npm install
 
-   # Install Python dependencies
+   # Install Python dependencies (editable install so `rfm` and `rfm_ui` resolve without PYTHONPATH)
    python -m venv .venv
    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   pip install -e .
    pip install -r requirements.txt
+   pip install -r requirements_dev.txt  # optional: dev tooling (pytest, black, flake8)
    ```
 
 3. Run the development server:
@@ -84,9 +86,26 @@ A production-ready visualizer for the **Recursive Fractal Mind** cognitive archi
 # Frontend Tests
 npm test
 
-# Backend Tests
+# Backend Tests — fast path (mirrors CI)
+python -m pytest tests/test_progress_reporting.py -v
+
+# Whole backend suite (some tests require dearpygui / a display)
 python -m pytest tests/
 ```
+
+A `justfile` at the repo root mirrors the CI jobs — `just test`, `just test-all`,
+`just test-resilience`. Install [just](https://github.com/casey/just) or invoke
+the commands directly.
+
+### Secure WebSocket server & resilience tests
+
+The secure launcher (`run_secure_websocket_server.py`) and the resilience
+smoke tests load SSL certs from `tools/ssl/certs/`. Generate them once after
+cloning:
+```
+just ssl-certs          # or: ./tools/ssl/generate_certs.sh
+```
+CI runs the same script in `.github/workflows/resilience-tests.yml`.
 
 ### Building for Production
 ```

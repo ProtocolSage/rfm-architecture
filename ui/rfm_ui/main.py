@@ -7,10 +7,10 @@ visualization UI.
 
 import os
 import sys
-import logging
 import argparse
 from typing import List, Optional
 
+from rfm.core.logging_config import configure_logging, LogLevel
 from rfm_ui.ui import RFMApp
 
 
@@ -61,15 +61,13 @@ def main(args: Optional[List[str]] = None) -> int:
     """
     # Parse arguments
     args = parse_args(args)
-    
-    # Configure logging
-    log_level = logging.DEBUG if args.debug else logging.INFO
-    
-    logging.basicConfig(
-        level=log_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+    configure_logging(
+        app_name="rfm_ui",
+        log_dir=args.log_dir,
+        console_level=LogLevel.DEBUG if args.debug else LogLevel.INFO,
     )
-    
+
     # Create and run application
     app = RFMApp(
         config_file=args.config,
