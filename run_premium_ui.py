@@ -55,7 +55,7 @@ def main():
         if args.load:
             try:
                 # Try to decode preset link
-                from ui.rfm_ui.utils.share import decode_preset, validate_preset
+                from rfm_ui.utils.share import decode_preset, validate_preset
                 preset_params = decode_preset(args.load)
                 
                 # Validate preset parameters
