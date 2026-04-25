@@ -15,6 +15,14 @@ A production-ready visualizer for the **Recursive Fractal Mind** cognitive archi
 - **High Performance**: GPU-accelerated rendering with optimized computations
 - **Component Showcase**: Gallery of UI components with interactive examples
 
+## Pricing & Availability
+
+RFM Architecture is currently available as a single open-source offering under the MIT License.
+
+- There are **no paid tiers** (no Free/Pro/Enterprise split) at this time.
+- The previously planned premium feature set is **temporarily removed** while it is being reworked.
+- All operationally available functionality is included in this repository.
+
 ## Getting Started
 
 ### Prerequisites

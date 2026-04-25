@@ -10,6 +10,7 @@ Welcome to the RFM Architecture documentation. This documentation provides compr
 - [Configuration Schema](config_schema.md): Detailed description of the configuration file format
 - [Fractal Library](fractal_library.md): Documentation of fractal types supported by RFM Architecture
 - [Animation System](animation_system.md): Documentation of the animation capabilities
+- [Pricing & Availability](pricing.md): Current plan availability and temporary feature status
 
 ### Developer Documentation
 - [API Reference](api_reference.md): Detailed API documentation for all modules
